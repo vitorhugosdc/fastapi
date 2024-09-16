@@ -2,9 +2,12 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-from fast_zero.schemas import Message, UserPublic, UserSchema
+from fast_zero.schemas import Message, UserPublic, UserSchema, UserDB
 
 app = FastAPI()
+
+# banco de dados fake, por enquanto
+database = []
 
 
 # response model é o Model de resposta, ou seja, o formato da classe de resposta
@@ -15,4 +18,9 @@ def read_root():
 
 @app.post('/users/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_users(user: UserSchema):
-    return user
+    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+
+    # model_dump tira do formato do Pydantic e cria um dicionário
+    database.append(user_with_id)
+
+    return user_with_id
