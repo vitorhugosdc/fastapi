@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-from fast_zero.schemas import Message, UserPublic, UserSchema, UserDB
+from fast_zero.schemas import Message, UserDB, UserPublic, UserSchema
 
 app = FastAPI()
 
@@ -10,7 +10,8 @@ app = FastAPI()
 database = []
 
 
-# response model é o Model de resposta, ou seja, o formato da classe de resposta
+# response model é o Model de resposta, ou seja,
+# o formato da classe de resposta
 @app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
     return {'message': 'Hello World!'}

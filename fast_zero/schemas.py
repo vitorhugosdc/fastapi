@@ -13,15 +13,16 @@ class UserSchema(BaseModel):
     password: str
 
 
+# UserDB hearda de UserSchema, ou seja, contém todos os campos de UserSchema
+# + id, basicamente serve para representar um usuário no banco de dados que
+# possui um id agora
+class UserDB(UserSchema):
+    id: int
+
+
 # é o mesmo conceito de um DTO, utilizado para não retornar a senha na resposta
 # ou seja, é um modelo de contrato de SAÍDA, inclusive contendo o novo id dele
 class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
-
-
-# UserDB hearda de UserSchema, ou seja, contém todos os campos de UserSchema
-# + id
-class UserDB(UserSchema):
-    id: int
