@@ -58,3 +58,15 @@ def get_user(user_id: int):
         )
 
     return database[user_id - 1]
+
+
+@app.delete(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
+)
+def delete_user(user_id: int):
+    if user_id - 1 > len(database) or database[user_id - 1] is None:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+    database.pop(user_id - 1)
+    return {'message': 'User deleted successfully'}

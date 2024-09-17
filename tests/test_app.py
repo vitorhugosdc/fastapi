@@ -99,11 +99,31 @@ def test_put_users(client):
     }
 
 
+def test_get_user(client):
+    response = client.get('/users/1')
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json() == {
+        'id': 1,
+        'username': 'johndoe',
+        'email': 'johndoe@me.com',
+    }
+
+
+def test_get_user_not_found(client):
+    response = client.get('/users/300')
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+    assert response.json() == {'detail': 'User not found'}
+
+
 # não vai passar por enquanto pois o banco de dados é fake
 # e não reseta antes de cada teste
 def test_put_users_not_found(client):
     response = client.put(
-        '/users/2',
+        '/users/300',
         json={
             'username': 'vitor',
             'email': 'vitor@me.com',
@@ -112,3 +132,21 @@ def test_put_users_not_found(client):
     )
 
     assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_user(client):
+    response = client.delete('/users/1')
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json() == {
+        'message': 'User deleted successfully',
+    }
+
+
+def test_delete_user_not_found(client):
+    response = client.delete('/users/300')
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+    assert response.json() == {'detail': 'User not found'}
