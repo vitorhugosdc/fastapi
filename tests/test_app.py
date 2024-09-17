@@ -78,3 +78,37 @@ def test_read_users(client):
             },
         ]
     }
+
+
+def test_put_users(client):
+    response = client.put(
+        '/users/2',
+        json={
+            'username': 'vitor',
+            'email': 'vitor@me.com',
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json() == {
+        'id': 2,
+        'username': 'vitor',
+        'email': 'vitor@me.com',
+    }
+
+
+# não vai passar por enquanto pois o banco de dados é fake
+# e não reseta antes de cada teste
+def test_put_users_not_found(client):
+    response = client.put(
+        '/users/2',
+        json={
+            'username': 'vitor',
+            'email': 'vitor@me.com',
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
