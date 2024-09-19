@@ -1,23 +1,16 @@
-from sqlalchemy import create_engine
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fast_zero.models import User, table_registry
+from fast_zero.models import User
 
 
-def test_create_user_db():
-    engine = create_engine(
-        'sqlite:///:memory:',
-    )
+def test_create_user_db(session: Session):
+    user = User(username='johndoe', email='johndoe@me.com', password='secret')
 
-    table_registry.metadata.create_all(engine)
+    session.add(user)
+    session.commit()
+    # session.refresh(user)
 
-    with Session(engine) as session:
-        user = User(
-            username='johndoe', email='johndoe@me.com', password='secret'
-        )
+    result = session.scalar(select(User).where(User.email == 'johndoe@me.com'))
 
-        session.add(user)
-        session.commit()
-        session.refresh(user)
-
-        assert user.id == 1
+    assert result.username == 'johndoe'
