@@ -9,8 +9,6 @@ from fast_zero.schemas import Message, UserList, UserPublic, UserSchema
 
 app = FastAPI()
 
-database = []
-
 
 # response model é o Model de resposta, ou seja,
 # o formato da classe de resposta

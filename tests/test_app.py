@@ -2,8 +2,6 @@ from http import HTTPStatus
 
 from fast_zero.schemas import UserPublic
 
-database = []
-
 
 def test_read_root_must_return_ok_and_hello_world(client):
     # client = TestClient(app)  # Arrange
