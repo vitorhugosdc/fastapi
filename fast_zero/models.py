@@ -1,3 +1,4 @@
+# Aqui estão tudo relacionado aos models no banco
 from datetime import datetime
 
 from sqlalchemy import func

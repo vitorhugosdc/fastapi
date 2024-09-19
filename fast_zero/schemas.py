@@ -1,3 +1,5 @@
+# aqui contém tudo relacionado a modelo/contrato de entrada e saida de dados,
+# não tem nada a ver com a representação dos Models no banco
 from pydantic import BaseModel, EmailStr
 
 

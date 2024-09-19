@@ -22,6 +22,8 @@ def session():
         'sqlite:///:memory:',
     )
 
+    # cria todas as tabelas dos models que estão registrados como
+    # @table_registry.mapped_as_dataclass, como o model User por exemplo
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -38,4 +40,5 @@ def session():
 
         yield session
 
+    # após todos os testes, dropa as tabelas criadas
     table_registry.metadata.drop_all(engine)

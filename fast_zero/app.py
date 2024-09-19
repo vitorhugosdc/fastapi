@@ -1,8 +1,12 @@
 from http import HTTPStatus
 
 from fastapi import FastAPI, HTTPException
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
+from fast_zero.models import User
 from fast_zero.schemas import Message, UserDB, UserList, UserPublic, UserSchema
+from fast_zero.settings import Settings
 
 app = FastAPI()
 
@@ -19,12 +23,51 @@ def read_root():
 
 @app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_users(user: UserSchema):
-    user_with_id = UserDB(**user.model_dump(), id=len(database) + 1)
+    engine = create_engine(Settings().DATABASE_URL)
 
-    # model_dump tira do formato do Pydantic e cria um dicionário
-    database.append(user_with_id)
+    with Session(engine) as session:
+        querry = select(User).where(
+            (User.username == user.username) | (User.email == user.email)
+        )
 
-    return user_with_id
+    db_user = session.scalar(querry)
+
+    if db_user:
+        if db_user.username == user.username:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail='Username already exists',
+            )
+        # acho que não precisa do elif, somente if
+        elif db_user.email == user.email:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail='Email already exists',
+            )
+
+    # poderia usar o model dump
+    # meio que ele instancia o User recebendo todos parametros em forma de
+    # dicionario (chave,valor) do UserSchema
+    # ai como User gera automaticamente o id e o created_by, não precisamos
+    #  passar o parametro
+    # também daria para modifica algum parametro na instanciação,
+    # como por exemplo:
+    # db_user = User(**user.model_dump(), email='user@me.com'),
+    # instanciado email como o valor passado, e não do model_dump()
+    # como seria então:
+    # db_user = User(**user.model_dump())
+
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        password=user.password,
+    )
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
 
 
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
