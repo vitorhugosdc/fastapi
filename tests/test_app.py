@@ -80,8 +80,12 @@ def test_read_users(client):
 # aqui é só pra testar como funciona testar com um usuário
 # dentro do banco de dados
 # inserido pela fixture, e não pelo post ou com Factorys
+# O user que chega, AINDA é um objeto do SQLAlchemy
 def test_read_users_with_user(client, user):
     # converte uma classe do SQLAlchemy para um schema do pydantic
+    # basicamente ele vê se o objeto do SQLAlchemy (user) pode ser convertido
+    # para um UserPublic, o que vai dar erro pois ele não conhece esse objeto
+    # e o fato dele não conhecer esse objeto, faz com oq a gente tenha que lá no schema de UserPublic(pasta schemas) e configurar com o ConfigDict
     user_schema = UserPublic.model_validate(user).model_dump()
 
     response = client.get('/users')

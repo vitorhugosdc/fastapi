@@ -65,6 +65,7 @@ def session():
 # User dentro dele  inserido no banco de dados
 # pode ser assim ou fazer mais proximo do rodrigo, ou seja,
 # inserindo os usuários via POST no Arrange/Preparação dos testes
+# Esse User é um objeto do SQLAlchemy
 @pytest.fixture
 def user(session):
     user = User(username='johndoe', email='johndoe@me.com', password='secret')

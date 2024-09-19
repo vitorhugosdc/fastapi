@@ -28,6 +28,7 @@ class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
+    # Significa que é pra validar os objetos pelos ATRIBUTOS
     model_config = ConfigDict(from_attributes=True)
 
 
