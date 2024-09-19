@@ -6,7 +6,10 @@ from fast_zero.settings import Settings
 engine = create_engine(Settings().DATABASE_URL)
 
 
-def get_session():
+# o comentário ao lado da definição da função serve para ser ignorado
+# nos testes, ai não interfere no coverage de testes,
+# pois é uma função que não pode ser coberta por testes
+def get_session():  # pragma: no cover
     # é tipo try with resources do Java, ele cria a sessão
     # e fecha automaticamente,
     #  por isso não precisa de um session.close()

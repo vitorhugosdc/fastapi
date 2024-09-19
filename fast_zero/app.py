@@ -87,6 +87,8 @@ def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
+    # Model dump aqui não funciona
+    # pq ele acaba identificando como um novo registro (pelo oq testei)
     db_user.email = user.email
     db_user.username = user.username
     db_user.password = user.password

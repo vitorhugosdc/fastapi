@@ -95,7 +95,7 @@ def test_read_users_with_user(client, user):
 
 def test_put_users(client, user):
     response = client.put(
-        '/users/1',
+        f'/users/{user.id}',
         json={
             'username': 'vitor',
             'email': 'vitor@me.com',
@@ -106,14 +106,16 @@ def test_put_users(client, user):
     assert response.status_code == HTTPStatus.OK
 
     assert response.json() == {
-        'id': 1,
-        'username': 'vitor',
-        'email': 'vitor@me.com',
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
     }
 
 
+# Como para encontrar um user pelo id, ele precisa existir,
+# recebemos o user da fixture, que é um user que já está no banco de dados
 def test_get_user(client, user):
-    response = client.get('/users/1')
+    response = client.get(f'/users/{user.id}')
 
     assert response.status_code == HTTPStatus.OK
 
