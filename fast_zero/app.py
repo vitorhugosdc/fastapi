@@ -69,8 +69,10 @@ def create_users(user: UserSchema, session=Depends(get_session)):
 
 
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
-def read_users():
-    return {'users': database}
+def read_users(session=Depends(get_session)):
+    query = select(User)
+    users = session.scalars(query).all()
+    return {'users': users}
 
 
 @app.put(
