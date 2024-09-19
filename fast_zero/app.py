@@ -5,11 +5,10 @@ from sqlalchemy import select
 
 from fast_zero.database import get_session
 from fast_zero.models import User
-from fast_zero.schemas import Message, UserDB, UserList, UserPublic, UserSchema
+from fast_zero.schemas import Message, UserList, UserPublic, UserSchema
 
 app = FastAPI()
 
-# banco de dados fake, por enquanto
 database = []
 
 
@@ -80,17 +79,25 @@ def read_users(limit: int = 10, offset: int = 0, session=Depends(get_session)):
 @app.put(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def put_users(user_id: int, user: UserSchema):
-    if user_id - 1 > len(database) or database[user_id - 1] is None:
+def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
+    query = select(User).where(User.id == user_id)
+
+    db_user = session.scalars(query).first()
+
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
-    user_with_id = UserDB(**user.model_dump(), id=user_id)
+    db_user.email = user.email
+    db_user.username = user.username
+    db_user.password = user.password
 
-    database[user_id - 1] = user_with_id
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
 
-    return user_with_id
+    return db_user
 
 
 @app.get(
@@ -108,10 +115,17 @@ def get_user(user_id: int):
 @app.delete(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
 )
-def delete_user(user_id: int):
-    if user_id - 1 > len(database) or database[user_id - 1] is None:
+def delete_user(user_id: int, session=Depends(get_session)):
+    query = select(User).where(User.id == user_id)
+
+    db_user = session.scalars(query).first()
+
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
-    database.pop(user_id - 1)
+
+    session.delete(db_user)
+    session.commit()
+
     return {'message': 'User deleted successfully'}

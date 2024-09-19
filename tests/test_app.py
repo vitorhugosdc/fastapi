@@ -85,7 +85,8 @@ def test_read_users_with_user(client, user):
     # converte uma classe do SQLAlchemy para um schema do pydantic
     # basicamente ele vê se o objeto do SQLAlchemy (user) pode ser convertido
     # para um UserPublic, o que vai dar erro pois ele não conhece esse objeto
-    # e o fato dele não conhecer esse objeto, faz com oq a gente tenha que lá no schema de UserPublic(pasta schemas) e configurar com o ConfigDict
+    # e o fato dele não conhecer esse objeto, faz com oq a gente tenha que lá
+    # no schema de UserPublic(pasta schemas) e configurar com o ConfigDict
     user_schema = UserPublic.model_validate(user).model_dump()
 
     response = client.get('/users')
@@ -94,9 +95,9 @@ def test_read_users_with_user(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_put_users(client):
+def test_put_users(client, user):
     response = client.put(
-        '/users/2',
+        '/users/1',
         json={
             'username': 'vitor',
             'email': 'vitor@me.com',
@@ -107,13 +108,13 @@ def test_put_users(client):
     assert response.status_code == HTTPStatus.OK
 
     assert response.json() == {
-        'id': 2,
+        'id': 1,
         'username': 'vitor',
         'email': 'vitor@me.com',
     }
 
 
-def test_get_user(client):
+def test_get_user(client, user):
     response = client.get('/users/1')
 
     assert response.status_code == HTTPStatus.OK

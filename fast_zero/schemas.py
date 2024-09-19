@@ -18,8 +18,8 @@ class UserSchema(BaseModel):
 # UserDB hearda de UserSchema, ou seja, contém todos os campos de UserSchema
 # + id, basicamente serve para representar um usuário no banco de dados que
 # possui um id agora
-class UserDB(UserSchema):
-    id: int
+# class UserDB(UserSchema):
+#    id: int
 
 
 # é o mesmo conceito de um DTO, utilizado para não retornar a senha na resposta
