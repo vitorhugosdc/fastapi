@@ -68,6 +68,8 @@ def create_users(user: UserSchema, session=Depends(get_session)):
     return db_user
 
 
+# limit = 10 e offset = 0 são valores padrão,
+# ou seja, se não forem passados, vão ser esses valores
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
 def read_users(limit: int = 10, offset: int = 0, session=Depends(get_session)):
     query = select(User).limit(limit).offset(offset)

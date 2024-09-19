@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from fast_zero.schemas import UserPublic
+
 database = []
 
 
@@ -47,9 +49,9 @@ def test_read_users(client):
     user2 = client.post(
         '/users',
         json={
-            'username': 'johndoe',
-            'email': 'johndoe@me.com',
-            'password': 'secret',
+            'username': 'johndoe2',
+            'email': 'johndoe2@me.com',
+            'password': 'secret2',
         },
     )
 
@@ -62,11 +64,6 @@ def test_read_users(client):
     assert response.json() == {
         'users': [
             {
-                'id': 1,
-                'username': 'johndoe',
-                'email': 'johndoe@me.com',
-            },
-            {
                 'id': user1.get('id'),
                 'username': user1.get('username'),
                 'email': user1.get('email'),
@@ -78,6 +75,19 @@ def test_read_users(client):
             },
         ]
     }
+
+
+# aqui é só pra testar como funciona testar com um usuário
+# dentro do banco de dados
+# inserido pela fixture, e não pelo post ou com Factorys
+def test_read_users_with_user(client, user):
+    # converte uma classe do SQLAlchemy para um schema do pydantic
+    user_schema = UserPublic.model_validate(user).model_dump()
+
+    response = client.get('/users')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}
 
 
 def test_put_users(client):
