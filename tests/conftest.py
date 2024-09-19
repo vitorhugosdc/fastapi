@@ -2,24 +2,41 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
 
 from fast_zero.app import app
+from fast_zero.database import get_session
 from fast_zero.models import table_registry
-
 
 # fixture para não ter que criar o TestCliente toda vez,
 # então passamos ela como parametro para todos os testes
 # e ele já vai saber que toda vez que tiver o parametro chamado cliente,
 # é para executar essa função, passando o retorno dela pro nosso teste
+
+
+# agora, passa a ser uma fixture que depende de outra fixture, a session
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(session):
+    def get_session_override():
+        return session
+
+    with TestClient(app) as client:
+        app.dependency_overrides[get_session] = get_session_override
+        yield client
+
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
 def session():
     engine = create_engine(
         'sqlite:///:memory:',
+        # isso é especifico do sqlite, onde não pode rodar objetos sqlite em
+        # threads diferentes, então settamos para não verificar mais
+        connect_args={'check_same_thread': False},
+        # não crie várias validaçoes de banco de dados, garanta que tudo vai
+        # rodar de forma estática
+        poolclass=StaticPool,
     )
 
     # cria todas as tabelas dos models que estão registrados como
