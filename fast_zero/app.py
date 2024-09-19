@@ -1,12 +1,11 @@
 from http import HTTPStatus
 
-from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
 
+from fast_zero.database import get_session
 from fast_zero.models import User
 from fast_zero.schemas import Message, UserDB, UserList, UserPublic, UserSchema
-from fast_zero.settings import Settings
 
 app = FastAPI()
 
@@ -21,14 +20,13 @@ def read_root():
     return {'message': 'Hello World!'}
 
 
+# Depends serve como injeção de dependência, ou seja,
+# ele toda vez executa o get_session e atribui o retorno dele ao session
 @app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_users(user: UserSchema):
-    engine = create_engine(Settings().DATABASE_URL)
-
-    with Session(engine) as session:
-        querry = select(User).where(
-            (User.username == user.username) | (User.email == user.email)
-        )
+def create_users(user: UserSchema, session=Depends(get_session)):
+    querry = select(User).where(
+        (User.username == user.username) | (User.email == user.email)
+    )
 
     db_user = session.scalar(querry)
 
