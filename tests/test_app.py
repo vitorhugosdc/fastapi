@@ -120,14 +120,14 @@ def test_get_user(client, user):
     assert response.status_code == HTTPStatus.OK
 
     assert response.json() == {
-        'id': 1,
-        'username': 'johndoe',
-        'email': 'johndoe@me.com',
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
     }
 
 
 def test_get_user_not_found(client):
-    response = client.get('/users/300')
+    response = client.get('/users/1')
 
     assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -138,7 +138,7 @@ def test_get_user_not_found(client):
 # e não reseta antes de cada teste
 def test_put_users_not_found(client):
     response = client.put(
-        '/users/300',
+        '/users/1',
         json={
             'username': 'vitor',
             'email': 'vitor@me.com',
@@ -149,8 +149,11 @@ def test_put_users_not_found(client):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_delete_user(client):
-    response = client.delete('/users/1')
+# Não precisa inserir um usuário no banco de dados utilizando POST
+# no Arrange do test (mas pode), pois ao receber user da fixture
+# esse usuário já está no banco de dados
+def test_delete_user(client, user):
+    response = client.delete(f'/users/{user.id}')
 
     assert response.status_code == HTTPStatus.OK
 
@@ -159,8 +162,10 @@ def test_delete_user(client):
     }
 
 
+# Como aqui não está sendo recebido o user gerado pela fixture,
+# não tem nenhum usuário no banco de dados
 def test_delete_user_not_found(client):
-    response = client.delete('/users/300')
+    response = client.delete('/users/1')
 
     assert response.status_code == HTTPStatus.NOT_FOUND
 

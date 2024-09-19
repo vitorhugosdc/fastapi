@@ -103,13 +103,17 @@ def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
 @app.get(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def get_user(user_id: int):
-    if user_id - 1 > len(database) or database[user_id - 1] is None:
+def get_user(user_id: int, session=Depends(get_session)):
+    query = select(User).where(User.id == user_id)
+
+    db_user = session.scalars(query).first()
+
+    if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
-    return database[user_id - 1]
+    return db_user
 
 
 @app.delete(
