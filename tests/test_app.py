@@ -34,6 +34,72 @@ def test_create_user(client):
     }
 
 
+def test_create_username_already_exists(client):
+    # arrange
+    client.post(
+        '/users',
+        json={
+            'username': 'johndoe',
+            'email': 'johndoe@me.com',
+            'password': 'secret',
+        },
+    )
+
+    # act
+    response = client.post(
+        '/users',
+        json={
+            'username': 'johndoe',
+            'email': 'johndoe2@me.com',
+            'password': 'secret',
+        },
+    )
+
+    # assert
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Username already exists'}
+
+
+def test_create_username_already_exists_second_method(client, user):
+    response = client.post(
+        '/users',
+        json={
+            'username': 'johndoe',
+            'email': 'johndoe2@me.com',
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Username already exists'}
+
+
+def test_create_email_already_exists(client):
+    # client = TestClient(app)
+
+    # arrange
+    client.post(
+        '/users',
+        json={
+            'username': 'johndoe',
+            'email': 'johndoe@me.com',
+            'password': 'secret',
+        },
+    )
+
+    response = client.post(
+        '/users',
+        json={
+            'username': 'johndoe2',
+            'email': 'johndoe@me.com',
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Email already exists'}
+
+
 def test_read_users(client):
     user1 = client.post(
         '/users',
