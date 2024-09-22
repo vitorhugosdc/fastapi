@@ -6,6 +6,7 @@ from sqlalchemy import select
 from fast_zero.database import get_session
 from fast_zero.models import User
 from fast_zero.schemas import Message, UserList, UserPublic, UserSchema
+from fast_zero.security import get_password_hash
 
 app = FastAPI()
 
@@ -40,6 +41,8 @@ def create_users(user: UserSchema, session=Depends(get_session)):
                 detail='Email already exists',
             )
 
+    hashed_password = get_password_hash(user.password)
+
     # poderia usar o model dump
     # meio que ele instancia o User recebendo todos parametros em forma de
     # dicionario (chave,valor) do UserSchema
@@ -55,7 +58,7 @@ def create_users(user: UserSchema, session=Depends(get_session)):
     db_user = User(
         username=user.username,
         email=user.email,
-        password=user.password,
+        password=hashed_password,
     )
 
     session.add(db_user)
@@ -87,11 +90,13 @@ def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
         )
 
+    hashed_password = get_password_hash(user.password)
     # Model dump aqui não funciona
     # pq ele acaba identificando como um novo registro (pelo oq testei)
+
     db_user.email = user.email
     db_user.username = user.username
-    db_user.password = user.password
+    db_user.password = hashed_password
 
     session.add(db_user)
     session.commit()
