@@ -9,6 +9,7 @@ from fast_zero.models import User
 from fast_zero.schemas import Message, Token, UserList, UserPublic, UserSchema
 from fast_zero.security import (
     create_access_token,
+    get_current_user,
     get_password_hash,
     verify_password,
 )
@@ -76,7 +77,12 @@ def create_users(user: UserSchema, session=Depends(get_session)):
 # limit = 10 e offset = 0 são valores padrão,
 # ou seja, se não forem passados, vão ser esses valores
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
-def read_users(limit: int = 10, offset: int = 0, session=Depends(get_session)):
+def read_users(
+    limit: int = 10,
+    offset: int = 0,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
     query = select(User).limit(limit).offset(offset)
     users = session.scalars(query).all()
     return {'users': users}
@@ -85,7 +91,12 @@ def read_users(limit: int = 10, offset: int = 0, session=Depends(get_session)):
 @app.put(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
+def put_users(
+    user_id: int,
+    user: UserSchema,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
     query = select(User).where(User.id == user_id)
 
     db_user = session.scalars(query).first()
@@ -113,7 +124,11 @@ def put_users(user_id: int, user: UserSchema, session=Depends(get_session)):
 @app.get(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def get_user(user_id: int, session=Depends(get_session)):
+def get_user(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
     query = select(User).where(User.id == user_id)
 
     db_user = session.scalars(query).first()
@@ -129,7 +144,11 @@ def get_user(user_id: int, session=Depends(get_session)):
 @app.delete(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
 )
-def delete_user(user_id: int, session=Depends(get_session)):
+def delete_user(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+):
     query = select(User).where(User.id == user_id)
 
     db_user = session.scalars(query).first()
