@@ -1,7 +1,4 @@
-from fastapi import FastAPI
 from pwdlib import PasswordHash
-
-app = FastAPI()
 
 pwd_context = PasswordHash.recommended()
 
