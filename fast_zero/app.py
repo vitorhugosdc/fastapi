@@ -7,7 +7,11 @@ from sqlalchemy import select
 from fast_zero.database import get_session
 from fast_zero.models import User
 from fast_zero.schemas import Message, Token, UserList, UserPublic, UserSchema
-from fast_zero.security import get_password_hash, verify_password
+from fast_zero.security import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+)
 
 app = FastAPI()
 
@@ -157,3 +161,6 @@ def login_for_access_token(
             detail='Incorrect username or password',
             # headers={'WWW-Authenticate': 'Bearer'},
         )
+    access_token = create_access_token(data_payload={'sub': user.username})
+
+    return {'access_token': access_token, 'token_type': 'Bearer'}

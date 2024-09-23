@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 from fast_zero.app import app
 from fast_zero.database import get_session
 from fast_zero.models import User, table_registry
+from fast_zero.security import get_password_hash
 
 # fixture para não ter que criar o TestCliente toda vez,
 # então passamos ela como parametro para todos os testes
@@ -68,8 +69,14 @@ def session():
 # Esse User é um objeto do SQLAlchemy
 @pytest.fixture
 def user(session):
-    user = User(username='johndoe', email='johndoe@me.com', password='secret')
+    pwd = 'testtest'
+    user = User(
+        username='johndoe',
+        email='johndoe@me.com',
+        password=get_password_hash(pwd),
+    )
     session.add(user)
     session.commit()
     session.refresh(user)
+    user.clean_password = pwd
     return user
