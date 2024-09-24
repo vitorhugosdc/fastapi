@@ -122,16 +122,12 @@ def get_user(
     session=Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    query = select(User).where(User.id == user_id)
-
-    db_user = session.scalars(query).first()
-
-    if not db_user:
+    if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    return db_user
+    return current_user
 
 
 @app.delete(
