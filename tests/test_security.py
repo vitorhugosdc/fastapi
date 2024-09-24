@@ -23,3 +23,11 @@ def test_jwt_invalid_token(client):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
     assert response.json() == {'detail': 'Could not validate credentials'}
+
+
+def test_jwt_invalid_user(client, token):
+    response = client.delete('/users/2', headers={'Authorization': f'{token}'})
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    assert response.json() == {'detail': 'Not authenticated'}
