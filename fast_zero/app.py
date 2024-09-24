@@ -91,34 +91,27 @@ def read_users(
 @app.put(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def put_users(
+def update_user(
     user_id: int,
     user: UserSchema,
     session=Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    query = select(User).where(User.id == user_id)
-
-    db_user = session.scalars(query).first()
-
-    if not db_user:
+    if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
-
-    hashed_password = get_password_hash(user.password)
     # Model dump aqui não funciona
     # pq ele acaba identificando como um novo registro (pelo oq testei)
 
-    db_user.email = user.email
-    db_user.username = user.username
-    db_user.password = hashed_password
+    current_user.email = user.email
+    current_user.username = user.username
+    current_user.password = get_password_hash(user.password)
 
-    session.add(db_user)
     session.commit()
-    session.refresh(db_user)
+    session.refresh(current_user)
 
-    return db_user
+    return current_user
 
 
 @app.get(
@@ -149,16 +142,12 @@ def delete_user(
     session=Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    query = select(User).where(User.id == user_id)
-
-    db_user = session.scalars(query).first()
-
-    if not db_user:
+    if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    session.delete(db_user)
+    session.delete(current_user)
     session.commit()
 
     return {'message': 'User deleted successfully'}

@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fast_zero.schemas import UserPublic
+from fast_zero.security import get_password_hash
 
 
 def test_read_root_must_return_ok_and_hello_world(client):
@@ -100,13 +101,13 @@ def test_create_email_already_exists(client):
     assert response.json() == {'detail': 'Email already exists'}
 
 
-def test_read_users(client):
+def test_read_users(client, token):
     user1 = client.post(
         '/users',
         json={
             'username': 'johndoe',
             'email': 'johndoe@me.com',
-            'password': 'secret',
+            'password': get_password_hash('secret'),
         },
     )
 
@@ -115,14 +116,16 @@ def test_read_users(client):
         json={
             'username': 'johndoe2',
             'email': 'johndoe2@me.com',
-            'password': 'secret2',
+            'password': get_password_hash('secret'),
         },
     )
 
     user1 = user1.json()
     user2 = user2.json()
 
-    response = client.get('/users')
+    response = client.get(
+        '/users', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
