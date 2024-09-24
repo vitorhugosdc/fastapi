@@ -164,7 +164,7 @@ def test_read_users_with_user(client, user, token):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_put_users(client, user, token):
+def test_update_users(client, user, token):
     response = client.put(
         f'/users/{user.id}',
         json={
