@@ -262,7 +262,7 @@ def test_delete_user_not_found(client, token):
 
 def test_get_token(client, user):
     response = client.post(
-        '/token',
+        '/auth/token',
         data={'username': user.username, 'password': user.clean_password},
     )
     token = response.json()
