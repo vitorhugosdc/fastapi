@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -13,12 +14,18 @@ from fast_zero.security import get_current_user, get_password_hash
 # tags é pra lá na documentação ele organizar
 # as coisas que são do mesmo dominio
 router = APIRouter(prefix='/users', tags=['users'])
+# primeiro valor é o tipo, segundo são ...?
+# isso não funciona, caso for o mesmo tipo nos 2 lados,
+# então usa '' pra arrumar, ou, segue o padrão T_(nome)
+# Session = Annotated[Session, Depends(get_session)]
+T_Session = Annotated['Session', Depends(get_session)]
+T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 # Depends serve como injeção de dependência, ou seja,
 # ele toda vez executa o get_session e atribui o retorno dele ao session
 @router.post('', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_users(user: UserSchema, session=Depends(get_session)):
+def create_users(user: UserSchema, session: T_Session):
     querry = select(User).where(
         (User.username == user.username) | (User.email == user.email)
     )
@@ -69,10 +76,10 @@ def create_users(user: UserSchema, session=Depends(get_session)):
 # ou seja, se não forem passados, vão ser esses valores
 @router.get('', status_code=HTTPStatus.OK, response_model=UserList)
 def read_users(
+    session: T_Session,
+    current_user: T_CurrentUser,
     limit: int = 10,
     offset: int = 0,
-    session=Depends(get_session),
-    current_user=Depends(get_current_user),
 ):
     query = select(User).limit(limit).offset(offset)
     users = session.scalars(query).all()
@@ -81,10 +88,10 @@ def read_users(
 
 @router.put('/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic)
 def update_user(
+    session: T_Session,
     user_id: int,
     user: UserSchema,
-    session=Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user: T_CurrentUser,
 ):
     if current_user.id != user_id:
         raise HTTPException(
@@ -105,9 +112,9 @@ def update_user(
 
 @router.get('/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic)
 def get_user(
+    session: T_Session,
     user_id: int,
-    session=Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user: T_CurrentUser,
 ):
     if current_user.id != user_id:
         raise HTTPException(
@@ -119,10 +126,10 @@ def get_user(
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
 def delete_user(
+    session: T_Session,
     user_id: int,
     # só pra deixar mais explicito, tanto faz, outra maneira de fazer
-    session: Session = Depends(get_session),
-    current_user=Depends(get_current_user),
+    current_user: T_CurrentUser,
 ):
     if current_user.id != user_id:
         raise HTTPException(
