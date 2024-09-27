@@ -28,7 +28,7 @@ def login_for_access_token(
     )
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='Incorrect username or password',
             # headers={'WWW-Authenticate': 'Bearer'},
         )
