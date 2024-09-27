@@ -17,6 +17,7 @@ router = APIRouter(prefix='/users', tags=['users'])
 # primeiro valor é o tipo, segundo são ...?
 # isso não funciona, caso for o mesmo tipo nos 2 lados,
 # então usa '' pra arrumar, ou, segue o padrão T_(nome)
+# onde T vem de tipo, ou seja, T_Session = tipo da Session
 # Session = Annotated[Session, Depends(get_session)]
 T_Session = Annotated['Session', Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]

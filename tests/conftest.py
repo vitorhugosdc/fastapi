@@ -1,3 +1,4 @@
+import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -9,12 +10,23 @@ from fast_zero.database import get_session
 from fast_zero.models import User, table_registry
 from fast_zero.security import get_password_hash
 
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User
+
+    # username = factory.Sequence(lambda n: f'user{n}')
+    username = factory.Faker('user_name')
+    # email = factory.LazyAttribute(lambda obj: f'{obj.usernamen}@test.com')
+    email = factory.Faker('email')
+    password = factory.LazyAttribute(lambda obj: f'{obj.username}+senha')
+    # password = get_password_hash('testtest')
+
+
 # fixture para não ter que criar o TestCliente toda vez,
 # então passamos ela como parametro para todos os testes
 # e ele já vai saber que toda vez que tiver o parametro chamado cliente,
 # é para executar essa função, passando o retorno dela pro nosso teste
-
-
 # agora, passa a ser uma fixture que depende de outra fixture, a session
 @pytest.fixture
 def client(session):
@@ -70,15 +82,20 @@ def session():
 @pytest.fixture
 def user(session):
     pwd = 'testtest'
-    user = User(
-        username='johndoe',
-        email='johndoe@me.com',
-        password=get_password_hash(pwd),
-    )
+    user = UserFactory(password=get_password_hash(pwd))
     session.add(user)
     session.commit()
     session.refresh(user)
     user.clean_password = pwd
+    return user
+
+
+@pytest.fixture
+def other_user(session):
+    user = UserFactory()
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user
 
 

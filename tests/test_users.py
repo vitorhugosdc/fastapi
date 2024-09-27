@@ -55,7 +55,7 @@ def test_create_username_already_exists_second_method(client, user):
     response = client.post(
         '/users',
         json={
-            'username': 'johndoe',
+            'username': user.username,
             'email': 'johndoe2@me.com',
             'password': 'secret',
         },
@@ -83,6 +83,23 @@ def test_create_email_already_exists(client):
         json={
             'username': 'johndoe2',
             'email': 'johndoe@me.com',
+            'password': 'secret',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {'detail': 'Email already exists'}
+
+
+def test_create_email_already_exists_using_user(client, user):
+    # client = TestClient(app)
+
+    # arrange
+    response = client.post(
+        '/users',
+        json={
+            'username': 'johndoe',
+            'email': user.email,
             'password': 'secret',
         },
     )
@@ -134,6 +151,49 @@ def test_read_users(client, user, token):
     }
 
 
+def test_read_users_using_other_user(client, user, token, other_user):
+    # user1 = client.post(
+    #     '/users',
+    #     json={
+    #         'username': 'johndoe',
+    #         'email': 'johndoe@me.com',
+    #         'password': get_password_hash('secret'),
+    #     },
+    # )
+
+    # user2 = client.post(
+    #     '/users',
+    #     json={
+    #         'username': 'johndoe2',
+    #         'email': 'johndoe2@me.com',
+    #         'password': get_password_hash('secret'),
+    #     },
+    # )
+
+    # user1 = user1.json()
+    # user2 = user2.json()
+
+    response = client.get(
+        '/users', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'users': [
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+            },
+            {
+                'id': other_user.id,
+                'username': other_user.username,
+                'email': other_user.email,
+            },
+        ]
+    }
+
+
 # aqui é só pra testar como funciona testar com um usuário
 # dentro do banco de dados
 # inserido pela fixture, e não pelo post ou com Factorys
@@ -171,6 +231,24 @@ def test_update_users(client, user, token):
         'id': user.id,
         'username': user.username,
         'email': user.email,
+    }
+
+
+def test_update_users_with_wrong_user(client, user, token, other_user):
+    response = client.put(
+        f'/users/{other_user.id}',
+        json={
+            'username': 'vitor',
+            'email': 'vitor@me.com',
+            'password': 'secret',
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    assert response.json() == {
+        'detail': 'Not enough permissions',
     }
 
 
@@ -243,6 +321,17 @@ def test_delete_user(client, user, token):
 def test_delete_user_not_found(client, token):
     response = client.delete(
         '/users/2', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_wrong_user(client, token, other_user):
+    response = client.delete(
+        '/users/' f'{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
