@@ -1,13 +1,13 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
-from fast_zero.models import Todo, User
+from fast_zero.models import Todo, TodoState, User
 from fast_zero.security import get_current_user
 
 router = APIRouter(prefix='/todos', tags=['todos'])
@@ -21,13 +21,8 @@ class UserRead(BaseModel):
     username: str
 
 
-class TodoRead(BaseModel):
-    username: str
-    tittle: str
-    description: str
-    priority: int
-    complete: bool
-    user: UserRead
+class TodoPublic(BaseModel):
+    id: int
 
 
 @router.get('')
@@ -49,36 +44,25 @@ def read_todos(
 
 
 class TodoSchema(BaseModel):
-    user_id: int
-    tittle: str
+    title: str
     description: str
-    priority: int
-    complete: bool = False
+    state: TodoState
 
 
-@router.post('', status_code=HTTPStatus.OK, response_model=TodoRead)
+@router.post('', status_code=HTTPStatus.CREATED, response_model=TodoPublic)
 def create_todo(
     session: T_Session, current_user: T_CurrentUser, todo: TodoSchema
 ):
-    if current_user.id != todo.user_id:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, details='User does not exists'
-        )
-    query = select(User).where(User.id == todo.user_id)
-    db_user = session.scalars(query).first()
-    if not db_user:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, details='User does not exists'
-        )
     todo = Todo(
-        **todo.model_dump(exclude={'user'})
+        **todo.model_dump(exclude={'user_id'}),
+        user_id=current_user.id,
         # title=todo.tittle,
         # complete=todo.complete,
         # description=todo.description,
         # priority=todo.priority,
         # user_id=current_user.id,
     )
-    todo.user = db_user
+    # todo.user = db_user
 
     session.add(todo)
     session.commit()

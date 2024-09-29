@@ -1,11 +1,20 @@
 # Aqui estão tudo relacionado aos models no banco
 from datetime import datetime
-from typing import List
+from enum import Enum
 
-from sqlalchemy import ForeignKey, func, table
-from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
+from sqlalchemy import ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, registry
 
 table_registry = registry()
+
+
+# TEM que estar em um desses estados
+class TodoState(str, Enum):
+    draft = 'draft'
+    todo = 'todo'
+    doing = 'doing'
+    done = 'done'
+    trash = 'trash'
 
 
 @table_registry.mapped_as_dataclass
@@ -19,7 +28,7 @@ class User:
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
-    todos: Mapped[List['Todo']] = relationship(back_populates='user')
+    # todos: Mapped[List['Todo']] = relationship(back_populates='user')
 
 
 @table_registry.mapped_as_dataclass
@@ -29,10 +38,10 @@ class Todo:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     title: Mapped[str]
     description: Mapped[str]
-    priority: Mapped[int]
-    complete: Mapped[bool]
-    created_at: Mapped[datetime] = mapped_column(
-        init=False, server_default=func.now()
-    )
+    # priority: Mapped[int]
+    state: Mapped[TodoState]
+    # created_at: Mapped[datetime] = mapped_column(
+    #     init=False, server_default=func.now()
+    # )
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
-    user: Mapped['User'] = relationship(back_populates='todos')
+    # user: Mapped['User'] = relationship(back_populates='todos')
