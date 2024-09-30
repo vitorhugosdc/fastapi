@@ -1,6 +1,7 @@
 # Aqui estão tudo relacionado aos models no banco
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, registry
@@ -42,6 +43,12 @@ class Todo:
     state: Mapped[TodoState]
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
+    )
+    # sem server_default aqui pois ele já iria inicializar
+    # a data de atualização até mesmo na inserção, então deixa só no onupdate
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        init=False,
+        onupdate=func.now(),
     )
     # users é o nome da tabela do model User,
     # e users.id tá acessando o id dessa tabela

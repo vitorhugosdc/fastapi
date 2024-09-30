@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 from typing import Annotated
 
@@ -17,21 +18,31 @@ T_Session = Annotated['Session', Depends(get_session)]
 T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+# Dados recebidos no POST
 class TodoSchema(BaseModel):
     title: str
     description: str
     state: TodoState
 
 
+# O retorno são os dados recebidos no POST (heardando de TodoSchema)
+# + os novos dados que só existem no banco de dados
+# com seus respectivos valores
 class TodoPublic(TodoSchema):
     id: int
+    created_at: datetime
+    updated_at: datetime | None
     model_config = ConfigDict(from_attributes=True)
 
 
+# no GET retornamos uma lista de TodoPublic
 class ListTodoPublic(BaseModel):
     todos: list[TodoPublic]
 
 
+# Dados que recebemos ao usar o PATCH, podendo ser opcionais ou não,
+# pois diferente do PUT, o PATCH pode atualizar só 1 atributo,
+# ou até mesmo nenhum
 class TodoUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
