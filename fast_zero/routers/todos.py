@@ -32,6 +32,12 @@ class ListTodoPublic(BaseModel):
     todos: list[TodoPublic]
 
 
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
 @router.get('', status_code=HTTPStatus.OK, response_model=ListTodoPublic)
 # talvez pra evitar tantos parâmetros, criar uma classe que represente eles
 # e acessar pela classe?
@@ -125,3 +131,33 @@ def delete_todo(session: T_Session, current_user: T_CurrentUser, todo_id: int):
     session.delete(todo)
     session.commit()
     return {'message': 'Todo deleted successfully'}
+
+
+@router.patch(
+    '/{todo_id}', status_code=HTTPStatus.OK, response_model=TodoPublic
+)
+def patch_todo(
+    session: T_Session,
+    current_user: T_CurrentUser,
+    todo_id: int,
+    todo: TodoUpdate,
+):
+    db_todo = session.scalar(
+        select(Todo).where(Todo.id == todo_id, Todo.user_id == current_user.id)
+    )
+
+    if not db_todo:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Todo not found'
+        )
+
+    # rever a explicação do model_dump, que eu me lembre ele transforma
+    # um objeto em forma de dicionário, chave e valor,
+    # ou seja, ele cria uma representação do objeto em forma de dicionário
+    for key, value in todo.model_dump(exclude_unset=True).items():
+        setattr(db_todo, key, value)
+
+    session.add(db_todo)
+    session.commit()
+    session.refresh(db_todo)
+    return db_todo

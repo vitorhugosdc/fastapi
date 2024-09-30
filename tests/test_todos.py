@@ -188,3 +188,33 @@ def test_delete_todo_error(session, client, user, other_user, token):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Todo not found'}
+
+
+def test_patch_todo(session, client, user, token):
+    todo = TodoFactory(user_id=user.id)
+    session.add(todo)
+    session.commit()
+
+    response = client.patch(
+        f'/todos/{todo.id}',
+        # poderia mandar um json vazio também,
+        # uma vez que no schema do update, ele aceita até tudo nulo,
+        # então seria um update que não altera nada
+        json={'title': 'new title'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    # acessando a chave title na resposta
+    assert response.json()['title'] == 'new title'
+
+
+def test_patch_todo_error(client, token):
+    response = client.patch(
+        '/todos/1',
+        json={'title': 'new title'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Todo not found'}
