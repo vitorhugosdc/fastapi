@@ -34,7 +34,7 @@ class ListTodoPublic(BaseModel):
 @router.get('', status_code=HTTPStatus.OK, response_model=ListTodoPublic)
 # talvez pra evitar tantos parâmetros, criar uma classe que represente eles
 # e acessar pela classe?
-def read_todos(
+def read_todos(  # noqa
     session: T_Session,
     current_user: T_CurrentUser,
     limit: int = 10,
