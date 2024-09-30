@@ -15,7 +15,7 @@ def test_create_todo(client, token):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json() == {
         'id': 1,
-        # 'title': 'Buy milk',
-        # 'description': 'Need to buy milk',
-        # 'state': 'draft',
+        'title': 'Buy milk',
+        'description': 'Need to buy milk',
+        'state': 'draft',
     }
