@@ -40,8 +40,8 @@ class Todo:
     description: Mapped[str]
     # priority: Mapped[int]
     state: Mapped[TodoState]
-    # created_at: Mapped[datetime] = mapped_column(
-    #     init=False, server_default=func.now()
-    # )
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     # user: Mapped['User'] = relationship(back_populates='todos')

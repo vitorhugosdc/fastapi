@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -23,14 +23,19 @@ class UserRead(BaseModel):
 
 class TodoPublic(BaseModel):
     id: int
+    model_config = ConfigDict(from_attributes=True)
 
 
-@router.get('')
+class ListTodoPublic(BaseModel):
+    todos: list[TodoPublic]
+
+
+@router.get('', status_code=HTTPStatus.OK, response_model=ListTodoPublic)
 def read_todos(
     session: T_Session,
     current_user: T_CurrentUser,
     limit: int = 10,
-    offset: int = 10,
+    offset: int = 0,
 ):
     query = (
         select(Todo)
