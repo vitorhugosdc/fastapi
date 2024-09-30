@@ -39,6 +39,11 @@ def read_todos(  # noqa
     current_user: T_CurrentUser,
     limit: int = 10,
     offset: int = 0,
+    # str | None definiria que o title poderia ser str ou None,
+    # mas o parâmetro deveria ser recebido obrigatoriamente
+    # Agora, ao utilizar None = None dizemos que
+    # se nada for informado, o valor padrão será None,
+    # ou seja, não será obrigatório enviar o parâmetro
     title: str | None = None,
     state: TodoState | None = None,
     description: str | None = None,

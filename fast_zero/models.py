@@ -43,5 +43,7 @@ class Todo:
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
+    # users é o nome da tabela do model User,
+    # e users.id tá acessando o id dessa tabela
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     # user: Mapped['User'] = relationship(back_populates='todos')
