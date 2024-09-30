@@ -159,3 +159,32 @@ def test_list_todos_by_state(session, client, user, token):
 
 
 # falta testar combinações de filtros
+
+
+def test_delete_todo(session, client, user, token):
+    todo = TodoFactory(user_id=user.id)
+    session.add(todo)
+    session.commit()
+
+    response = client.delete(
+        f'/todos/{todo.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'Todo deleted successfully'}
+
+
+def test_delete_todo_error(session, client, user, other_user, token):
+    todo = TodoFactory(user_id=user.id)
+    todo2 = TodoFactory(user_id=other_user.id)
+    session.bulk_save_objects([todo, todo2])
+    session.commit()
+
+    # tentando deletar do user uma todo do other_user, com o token do user
+    # poderia ser só todo.id+1, usei outro user pra ficar mais enfeitado
+    response = client.delete(
+        f'/todos/{other_user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Todo not found'}

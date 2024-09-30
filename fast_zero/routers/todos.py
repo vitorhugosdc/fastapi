@@ -1,13 +1,14 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
 from fast_zero.models import Todo, TodoState, User
+from fast_zero.schemas import Message
 from fast_zero.security import get_current_user
 
 router = APIRouter(prefix='/todos', tags=['todos'])
@@ -97,3 +98,30 @@ def create_todo(
     session.commit()
     session.refresh(todo)
     return todo
+
+
+@router.delete('/{todo_id}', status_code=HTTPStatus.OK, response_model=Message)
+def delete_todo(session: T_Session, current_user: T_CurrentUser, todo_id: int):
+    # todo = session.get(Todo, todo_id)
+
+    # primeira maneira (que eu tive a ideia)
+    # todo = session.scalars(select(Todo).where(Todo.id == todo_id)).first()
+
+    # if current_user.id != todo.user_id:
+    #     raise HTTPException(
+    #         status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
+    #     )
+
+    # segunda maneira, ensinada no curso
+    todo = session.scalar(
+        select(Todo).where(Todo.id == todo_id, Todo.user_id == current_user.id)
+    )
+
+    if not todo:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Todo not found'
+        )
+
+    session.delete(todo)
+    session.commit()
+    return {'message': 'Todo deleted successfully'}
